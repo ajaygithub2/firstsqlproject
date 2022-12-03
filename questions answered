@@ -1,0 +1,38 @@
+/* Server version: 8.0.31 MySQL Community Server - GPL
+
+
+
+-- check data for how many years is available for each country --
+
+SELECT country, COUNT(*) AS noofyears FROM regimes GROUP BY country ORDER BY noofyears DESC;
+
+-- No of countries in each type of regime in each year --
+
+SELECT year, reg ,COUNT(*) FROM regimes GROUP BY year, reg ORDER BY year;
+
+-- Percentage of countries per regime according to data available for that year
+
+SELECT 
+      year, 
+      reg,
+      (COUNT(*))/(SUM(COUNT(*)) OVER(PARTITION BY year))*100 AS percentage,
+      COUNT(*) AS no_of_countries, 
+      SUM(COUNT(*)) OVER(PARTITION BY year) AS available_data
+FROM regimes 
+GROUP BY year, reg
+ORDER BY year;
+
+-- Number of times regimes changed in each country and the years in which it changed
+
+SELECT 
+      year, 
+      country,
+	  COUNT(*) OVER(PARTITION BY country) AS no_of_times_regime_changed
+FROM
+ (SELECT
+	  year,
+      country,
+      reg - LAG(reg) OVER(PARTITION BY country ORDER BY country, year) AS change_in_regime
+FROM regimes) AS regimes2
+WHERE change_in_regime <> 0 AND year <> 1789
+ORDER BY country, year;
