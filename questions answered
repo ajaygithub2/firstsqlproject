@@ -39,3 +39,39 @@ FROM regimes) AS regimes2
 WHERE change_in_regime <> 0 AND year <> 1789
 ORDER BY country, year;
 
+-- Number of times regimes changed in each country and the years in which it changed
+
+SELECT 
+      year, 
+      country,
+	  COUNT(*) OVER(PARTITION BY country) AS no_of_times_regime_changed
+FROM
+ (SELECT
+	  year,
+      country,
+      reg - LAG(reg) OVER(PARTITION BY country ORDER BY country, year) AS change_in_regime
+FROM regimes) AS regimes2
+WHERE change_in_regime <> 0 AND year <> 1789
+ORDER BY country, year;
+
+-- Top 5 most stable countries
+
+SELECT
+      country,
+      MAX(no_of_times_regime_changed) AS regimes_changed
+FROM
+(SELECT 
+      country,
+	  COUNT(*) OVER(PARTITION BY country) AS no_of_times_regime_changed
+FROM
+ (SELECT
+	  year,
+      country,
+      reg - LAG(reg) OVER(PARTITION BY country ORDER BY country, year) AS change_in_regime
+FROM regimes) AS regimes2
+WHERE change_in_regime <> 0) AS regimes3
+GROUP BY country
+ORDER BY regimes_changed ASC
+LIMIT 5
+;
+
