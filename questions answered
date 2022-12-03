@@ -23,6 +23,8 @@ GROUP BY year, reg
 ORDER BY year;
 
 -- Number of times regimes changed in each country and the years in which it changed
+/*I excluded year 1789 because Lag was considering it as a change in regime, but it it now not necessary as I was not partitioning data by country before,
+in the subquery which was a mistake as it would consider the change in country as change in regime when it was actually not*/
 
 SELECT 
       year, 
@@ -36,3 +38,4 @@ FROM
 FROM regimes) AS regimes2
 WHERE change_in_regime <> 0 AND year <> 1789
 ORDER BY country, year;
+
